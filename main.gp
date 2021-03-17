@@ -7,7 +7,7 @@ A = 245036439927702828116237663546936021015004354074422410966568949608523157;
 
 isinlist(list,b) = 
 {
-  for(i = 1, #list, if(list[i] = b, return(1)); return(0));
+  for(i = 1, #list, if(list[i] = b, return(i)); return(0));
 }
 
 babyshark(n,g,A) = {
