@@ -1,20 +1,41 @@
+default(parisizemax,100m);
 g = Mod(6, 682492462409094395392022581537473179285250139967739310024802121913471471);
 A = 245036439927702828116237663546936021015004354074422410966568949608523157;
+nval = 682492462409094395392022581537473179285250139967739310024802121913471471;
 
 \\========================================================
 \\                Baby Step Giant Step
 \\========================================================
 
-isinlist(list,b) = 
-{
-  for(i = 1, #list, if(list[i] = b, return(i)); return(0));
+babyshark(n,gen,val) = {
+	m = sqrtint(n) + 1;
+	a = Map();
+	mul = 1;
+	for(j=1,m,mapput(a,lift(mul),j);mul = mul*gen;);
+	b = val;
+	inv = gen^(-m);
+	for(i=0, m, if(mapisdefined(a,lift(b),&j),return(i*m +j),b *= val););
+	
+	
 }
 
-babyshark(n,g,A) = {
-  m = sqrtint(n) + 1;
-  a = vector(m);
-  for(j=1,m, a[j] = g^j;);
-  b = A;
-}
+\\print(babyshark(nval,g,A));
+\\il se trouve que la valeur de nval est trop élevé pour faire directement un BSGS dessus. Nous allons donc avoir recours à l'algorithme de Pohlig-Hellman
 
-print(isinlist(vector(3),1));
+\\=======================================================
+\\				Pohlig-Hellman
+\\=======================================================
+smallPH(geni,Ai,f1i,f2i) ={
+\\inspiré du PH_prime_order de Julien. Mon code continuait à avoir des overflow du fait du manque de RAM
+	x=0;
+	nwgen = geni^(f1i^(f2i-1));
+	for(j=0, f2i-1, Aj = (geni^(-x)*Ai)^(f1i^(f2i-1-j));d = babyshark(f1i,nwgen,Aj);x+=f1i^j+d;);
+	return(x);
+
+}
+phi = eulerphi(nval);
+f = factor(phi);
+a2 = vector(4);
+for(i=1,4,nvali = f[i,1]^f[i,2];geni =g^(phi/nvali);Ai = Mod(A,nval)^(phi/nvali);a2[i]=Mod(smallPH(geni,Ai,f[i,1],f[i,2]),nvali););
+print(lift(chinese(a2)));
+print(znlog(A,g));
